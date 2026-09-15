@@ -46,6 +46,56 @@ the public branch include device-specific fixes and a V config. The reported
 running release `3.18.140-lineageos-g217079fec494` is not reproducibly mapped
 to a public HighwayStar commit yet.
 
+## Lineage 17.1 fork provenance
+
+The additional practical source is:
+
+* Repository: `lenovo-devs/android_kernel_lenovo_msm8953`
+* Branch: `lineage-17.1`
+* Branch head: `331772c6dd08d087cfa2e50ad69185f11bc5f47d`
+
+This repository is a fork of `LineageOS/android_kernel_lenovo_msm8953`. The
+two histories share the common ancestor
+`cd20e13ccabd8fd1181eff9408ec0580f53ef3ec`. The official LineageOS
+`lineage-17.1` history contains, among others,
+`arch/arm64/configs/lineageos_kuntao_defconfig`, but does not contain
+`lineageos_tb8704_defconfig`. The TB8704-specific configuration is introduced
+in the lenovo-devs fork by:
+
+* `81b7e18da83deec6d6cf48ddb8dd69ef43cf229c`:
+  `arch: arm64: Add tb8704 lineageos config`
+
+This establishes the relationship as official common MSM8953 kernel history
+followed by fork-specific TB8704 additions. It must not be described as
+evidence that the official LineageOS repository itself supports TB8704.
+
+The fork's TB8704 device and recovery-relevant history includes:
+
+* `2717db3ec882956e53e98d78fe20bb60f6969eae`:
+  `arch: arm: boot: dts: reverse engineered tb8704 dts code`; this adds the
+  TB8704 DTS files and explicitly reconstructs them from TB8703/X703 and stock
+  boot image/DTB data.
+* `7d2feae5daa60b7e6521f16eadf04e24989ff8f4`:
+  `arch: arm: boot: dts: tb8704: Fix reboot to recovery`; this removes the
+  `qcom,store-hard-reset-reason` property from the PMIC DTS path.
+* `594b80ea42c45e6e078c734499e653eacfe4bde2` changes the TB8704 DTS to the
+  CAF hall driver, and `3ad0010702ea36e4f186a680b7767a58c368b4c0` fixes a
+  TB8704 DTS typo affecting OTG.
+* `c870a3a1f8822e609e6482918bbc13ca1b9a7461` disables modules in the TB8704
+  configuration and `6b5c69e93f256b6b64038ce163b4528efb37fff4` enables target
+  TTL in that configuration.
+* The branch head `331772c6dd08d087cfa2e50ad69185f11bc5f47d` adds
+  `KEY_WAKEUP` for the TB8704 double-tap event.
+
+The fork's branch head Makefile reports Linux 3.18.140. The shared history
+contains `9a298fe002c95c0b48677128584a5ec34d9c12c4`,
+`Merge 3.18.140 into android-3.18`, which changes the kernel base from
+3.18.139 to 3.18.140. The later merge
+`3ed361af1b3803f2dec1ecfecd369fd446165143` brings the Android common
+`android-3.18` line into `lineage-16.0-caf-8996`; it is an additional common
+kernel-history merge, not a TB8704 change. Both commits are ancestors of the
+lenovo-devs `lineage-17.1` head.
+
 ## Device-tree structure
 
 The source uses the legacy ARM DT location through the arm64 symlink:
@@ -65,19 +115,12 @@ selection is made by DT and the Android device tree. HighwayStar's device
 `lineageos_tb8704_defconfig`, `TARGET_KERNEL_ARCH := arm64`, and
 `BOARD_KERNEL_IMAGE_NAME := Image.gz-dtb`.
 
-LineageOS device trees preserve this family model. The public LineageOS
-`lineage-16.0` and `lineage-17.1` branches still select
-`lineageos_tb8704_defconfig`; their board asserts include F, X, N and V.
-This is evidence of shared source/configuration, not evidence that one
-variant's hardware support proves another variant's support.
-
-Other public search results include `LineageOS/android_kernel_lenovo_msm8953`
-and several Lenovo MSM8953 forks. They are useful comparison sources only;
-the repository names and SoC match do not establish TB-8704F provenance.
-The HighwayStar import and its explicit TB-8704 DT commits remain the
-preferred device-specific source trail. No separate official Lenovo Git
-repository containing the complete TB-8704 DT history was established in K0;
-the public evidence points to the Lenovo source tarball described above.
+The Android device-tree side preserves the TB-8704 family model and selects
+the family defconfig for F, X, N and V. This is evidence of shared
+source/configuration, not evidence that one variant's hardware support proves
+another variant's support. The official kernel repository remains a common
+MSM8953 lineage source; TB8704 support in this document refers specifically to
+the lenovo-devs fork and its device-specific history.
 
 ## TWRP prebuilt analysis
 
@@ -118,21 +161,43 @@ the public LineageOS device lineage, and indexed public code search. No
 complete, authoritative Git commit was found. It remains **unresolved**.
 The suffix must not be treated as a Git SHA or matched by resemblance.
 
-## Reproducible build candidate
+The lenovo-devs `lineage-17.1` line is now a substantially stronger public
+relative of the physical kernel's `3.18.140-lineageos` version than the older
+3.18.139 HighwayStar configuration anchor. This is a lineage relationship,
+not identification of `g217079fec494`; that suffix remains unresolved.
 
-The conservative candidate for a first source reproduction is the exact
-HighwayStar `cm-14.1` tree at the F-config commit
-`cfffe19df9e92c60a9f15608bb917d7685785b0b`, using:
+## Baseline recommendations
 
-* `ARCH=arm64`
-* `lineageos_tb8704_defconfig`
-* Android GCC 4.9, preferably the Android 7/8-era
-  `aarch64-linux-android-4.9` toolchain
-* matching Android binutils from the same toolchain release
-* `Image.gz-dtb` as the expected image target
+### Historical provenance baseline
 
-An initial build command, to be run only after source import is explicitly
-approved, is:
+The historical provenance baseline remains HighwayStar's
+`HighwayStar/android_kernel_lenovo_tb8704`, branch `cm-14.1`, at the F
+configuration anchor `cfffe19df9e92c60a9f15608bb917d7685785b0b`. It preserves
+the Lenovo source import and the explicitly documented TB8704 DT
+reconstruction path. It is the source trail for understanding the origin of
+TB8704 support, not the preferred first build candidate anymore.
+
+### Practical Lineage 17.1 baseline
+
+The preferred first reproducible-build candidate is now:
+
+* Repository: `lenovo-devs/android_kernel_lenovo_msm8953`
+* Branch: `lineage-17.1`
+* Commit: `331772c6dd08d087cfa2e50ad69185f11bc5f47d`
+* Defconfig: `lineageos_tb8704_defconfig`
+* Architecture: `arm64`
+* Output: `Image.gz-dtb`
+* Toolchain: historical Android GCC 4.9, preferably
+  `aarch64-linux-android-4.9` with matching binutils
+
+This candidate contains TB8704 support, the TB8704 defconfig, Linux 3.18.140,
+and the Android 10/Lineage 17.1-era history. It is still not established as
+the exact source of the physical kernel release.
+
+## Reproducible build command
+
+The command below is documented for the practical baseline only. It must be
+run in K1 after source import is explicitly approved:
 
 ```sh
 export ARCH=arm64
@@ -141,10 +206,20 @@ make lineageos_tb8704_defconfig
 make -j$(nproc) Image.gz-dtb
 ```
 
-This is a reproducibility candidate, not a claim that it recreates the
-TWRP prebuilt or the currently running 3.18.140 kernel. A GCC 4.9 build is
-prioritized over current GCC/Clang because both the prebuilt compiler string
-and the original Android 3.18 build environment point to that generation.
+No build has been run. A GCC 4.9 build is prioritized over current GCC/Clang
+because both the prebuilt compiler string and the original Android 3.18 build
+environment point to that generation.
+
+## Windows checkout constraint
+
+The earlier Windows checkout failed at:
+
+`drivers/gpu/drm/nouveau/core/subdev/i2c/aux.C`
+
+The final path component `AUX` is reserved by Windows, so a normal
+Windows/NTFS working tree is not suitable for kernel source checkout or build.
+K1 must use a real Linux filesystem, such as an ext4-backed Linux VM or the
+internal WSL2 filesystem. Do not use `/mnt/c/...` as the kernel working tree.
 
 ## Open provenance gaps
 
@@ -153,7 +228,7 @@ and the original Android 3.18 build environment point to that generation.
   packaging time.
 * Resolve `g217079fec494` using a complete boot image, kernel config,
   `/proc/version`, or a matching public repository history.
-* Perform a clean build of the candidate with the historical toolchain and
-  compare output metadata before any functional change or source import.
+* Perform a clean build of the practical candidate with the historical
+  toolchain and compare output metadata before any functional change.
 
 No Source Import is authorized by this K0 result.

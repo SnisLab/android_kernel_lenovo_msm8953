@@ -1,6 +1,7 @@
 # TB-8704F Legacy Kernel Baseline Investigation
 
-Status: Phase K0, investigation only. No kernel source has been imported.
+Status: Phase K0 investigation record. Later K1/K2 source import and build
+results are documented separately.
 
 ## Scope
 
@@ -140,9 +141,13 @@ Static inspection found:
   `4.9.x 20150123 (prerelease) (GCC)`.
 * The build date is `Wed Oct 9 15:40:05 CST 2019`.
 * No kernel command line was established from the static payload.
-* No valid flattened-device-tree header was found in the decompressed
-  payload. The supplied file is therefore not proven to contain an appended
-  DTB/DTB table, despite the Android board naming convention.
+* No valid flattened-device-tree header was found in the decompressed payload.
+  This earlier search examined only the decompressed kernel payload and did
+  not inspect bytes trailing the gzip stream.
+
+K3 later examined the bytes trailing the gzip stream and found three valid
+appended FDT blobs. The supplied file is therefore established to contain an
+appended DTB table.
 
 Certain: gzip format, arm64 Image marker, version/build strings, size and
 hash. Likely: a vendor/Lenovo-derived MSM8953 Android kernel image. Not
@@ -206,9 +211,9 @@ make lineageos_tb8704_defconfig
 make -j$(nproc) Image.gz-dtb
 ```
 
-No build has been run. A GCC 4.9 build is prioritized over current GCC/Clang
-because both the prebuilt compiler string and the original Android 3.18 build
-environment point to that generation.
+The later K2.4 GCC 4.9 build is documented separately. A GCC 4.9 build was
+prioritized over current GCC/Clang because both the prebuilt compiler string
+and the original Android 3.18 build environment point to that generation.
 
 ## Windows checkout constraint
 
@@ -231,4 +236,5 @@ internal WSL2 filesystem. Do not use `/mnt/c/...` as the kernel working tree.
 * Perform a clean build of the practical candidate with the historical
   toolchain and compare output metadata before any functional change.
 
-No Source Import is authorized by this K0 result.
+No source import was authorized by this K0 result; the later K1 source import
+is documented in the current provenance records.

@@ -18,7 +18,12 @@ Early work will preserve the known-working legacy kernel path where needed for r
 
 ## Status
 
-Initial project setup. No kernel source has been imported yet.
+The legacy TB8704 MSM8953 baseline is pinned to
+`lenovo-devs/android_kernel_lenovo_msm8953` branch `lineage-17.1`, commit
+`331772c6dd08d087cfa2e50ad69185f11bc5f47d`.
+
+The source has been imported as the initial reproducible legacy baseline. No
+local kernel modifications or build fixes have been applied yet.
 
 ## Related repositories
 
